@@ -27,6 +27,7 @@ if __name__ == "__main__":
     config = uvicorn.Config(app, host="0.0.0.0", port=80, loop=loop)
     server = uvicorn.Server(config)
     
+    
     async def shutdown():
         logger.info("Shutting down...")
         # Stop the bot polling
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     
     try:
         # Start the server
+        logger.info("Server started.")
         loop.run_until_complete(server.serve())
     except KeyboardInterrupt:
         loop.run_until_complete(shutdown())
