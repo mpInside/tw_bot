@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+aiogram
+python-dotenv
+selenium
+webdriver-manager
+nest-asyncio
+aiohttp
+pydantic

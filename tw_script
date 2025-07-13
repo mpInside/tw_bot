@@ -1,0 +1,58 @@
+//@version=6
+//
+
+indicator('RSI OS/OB 12h', overlay = true)
+// INPUTS-----------------------------------------
+//startTime = input.time(title='Start Time', defval=timestamp('01 JAN 2022 00:00 +0000'))
+//endTime = input.time(title='End Time', defval=timestamp('01 Jan 2024 00:00 +0000'))
+
+rsiLength = input(title = 'RSI Length', defval = 14)
+
+v_rsiValue_1h_os = input.float(title = 'RSI Value 1h OS', defval = 31.00, step = 0.1)
+v_rsiValue_12h_G_os = input.float(title = 'RSI Value 12h_G OS', defval = 49.00, step = 0.1)
+
+v_rsiValue_1h_ob = input.float(title = 'RSI Value 1h OB', defval = 70.5, step = 0.1)
+v_rsiValue_12h_G_ob = input.float(title = 'RSI Value 12h_G OB', defval = 51.00, step = 0.1)
+
+//v_rsiValue_12h_Y = input(title='RSI Value 12h_Y', defval=44.00)
+v_rsiValue_gl = input.float(title = 'RSI Value GoLongNew', defval = 32.00, step = 0.1)
+v_rsiValue_gs = input.float(title = 'RSI Value GoShortNew', defval = 66.00, step = 0.1)
+
+ema_support60 = input(title = 'EMA support 1', defval = 60)
+ema_support200 = input(title = 'EMA support 3', defval = 200)
+
+// Indicators------------------------------------
+rsiValue1h = request.security(syminfo.tickerid, '60', ta.rsi(close, rsiLength))
+rsiValue12h = request.security(syminfo.tickerid, '720', ta.rsi(close, rsiLength))
+
+ema_norm=ta.ema(close, 60)
+
+ema200_12h = request.security(syminfo.tickerid, '720', ta.ema(close, ema_support200))
+
+ema60_1h = request.security(syminfo.tickerid, '60', ta.ema(close, ema_support60))
+ema200_1h = request.security(syminfo.tickerid, '60', ta.ema(close, ema_support200))
+
+ema60_2h = request.security(syminfo.tickerid, '120', ta.ema(close, ema_support60))
+ema200_2h = request.security(syminfo.tickerid, '120', ta.ema(close, ema_support200))
+
+ema200_12h_plot = plot(ema200_12h, title = 'ema200_12h', color = color.new(color.purple, 0), linewidth = 3, style = plot.style_line)
+ema_plot = plot(ema_norm, title = 'ema_norn60', color = color.new(color.green, 0), linewidth = 1, style = plot.style_line)
+
+ema1_1h_plot = plot(ema60_1h, title = 'ema60_1h', color = color.new(color.red, 0), linewidth = 1, style = plot.style_line)
+ema3_1h_plot = plot(ema200_1h, title = 'ema200_1h', color = color.new(color.purple, 0), linewidth = 1, style = plot.style_line)
+
+fill(ema3_1h_plot, ema1_1h_plot, color = ema200_1h > ema60_1h ? color.new(color.red, 85) : color.new(color.green, 85), editable = true) 
+
+oversold = rsiValue1h < v_rsiValue_1h_os and rsiValue12h > v_rsiValue_12h_G_os and close >= ema200_12h
+plotshape(oversold, title = 'Oversold', location = location.belowbar, color = color.blue, style = shape.triangleup, text = 'OS', textcolor = color.blue)
+
+overbought = rsiValue1h > v_rsiValue_1h_ob and rsiValue12h < v_rsiValue_12h_G_ob and close <= ema200_12h
+plotshape(overbought, title = 'Overbought', location = location.abovebar, color = color.red, style = shape.triangledown, text = 'OB', textcolor = color.red)
+alertcondition(oversold or overbought, 'OS/OB signal', '{{ticker}}')
+
+//GO LONG GO SHOT new
+go_long = rsiValue1h < v_rsiValue_gl and close <= ema60_2h and close >= ema200_2h //and (close>=ema200_12h)
+go_short = rsiValue1h > v_rsiValue_gs and close >= ema60_2h and close <= ema200_2h //and (close<=ema200_12h)
+
+plotshape(go_long, title = 'GoLong', location = location.abovebar, color = color.blue, style = shape.triangleup, text = 'GL', textcolor = color.blue)
+plotshape(go_short, title = 'GoShort', location = location.belowbar, color = color.red, style = shape.triangledown, text = 'GS', textcolor = color.red)
