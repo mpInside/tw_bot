@@ -73,7 +73,7 @@ async def send_trading_signal(message_text: str):
         builder.adjust(1)  # Размещаем кнопки по одной в ряд
         
         # Format message with timestamp
-        formatted_message = f"📨 testНовое сообщение:\n\n{ticker}\n\nOS/OB signal\n\n⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        formatted_message = f"📨 Новое сообщение:\n\n{ticker}\n\nOS/OB signal\n\n⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         
         
         # Send message to Telegram with inline keyboard
