@@ -14,7 +14,7 @@
 ## Архитектура
 
 - **main.py** - Точка входа, запуск сервера и бота
-- **api.py** - FastAPI сервер с эндпоинтом `/send-message`
+- **api.py** - FastAPI сервер с эндпоинтом `/tradingview-signal`
 - **telegram_bot.py** - Логика Telegram бота и обработка сигналов
 - **config.py** - Конфигурация и переменные окружения
 - **logger.py** - Система логирования
@@ -55,16 +55,27 @@ python main.py
 
 ## API Endpoints
 
-### POST /send-message
+### POST /tradingview-signal
 
-Отправляет торговый сигнал в Telegram.
+Отправляет торговый сигнал в Telegram с указанием стороны сделки.
 
 **Тело запроса:**
 ```json
 {
-    "text": "Symbol = 1000PEPEUSDT.P OS/OB signal  OS 1h"
+    "Type": "OS/OB signal",
+    "Symbol": "1000PEPEUSDT.P",
+    "GoLong": 1,
+    "GoShort": 0
 }
 ```
+
+**Параметры:**
+- `Type` - тип сигнала (например, "OS/OB signal")
+- `Symbol` - тикер торгового инструмента (например, "1000PEPEUSDT.P")
+- `GoLong` - флаг сигнала на покупку (1 - есть сигнал, 0 - нет сигнала)
+- `GoShort` - флаг сигнала на продажу (1 - есть сигнал, 0 - нет сигнала)
+
+**Примечание:** Один из флагов `GoLong` или `GoShort` должен быть равен 1.
 
 **Ответ:**
 ```json
@@ -98,16 +109,10 @@ tw_bot/
 
 ## Примеры использования
 
-### Для cmd/
+### Примеры тестирования нового webhook
+
+#### Сигнал на покупку (BUY) - для local
 ```bash
-curl -X POST http://185.87.193.73:80/send-message -H "Content-Type: application/json" -d "{\"text\": \"Symbol = 1000PEPEUSDT.P OS/OB signal  OS 1h\"}"
-```
+curl -X POST http://localhost:80/tradingview-signal -H "Content-Type: application/json" -d "{\"Type\": \"OS/OB signal\", \"Symbol\": \"1000PEPEUSDT.P\", \"GoLong\": 1, \"GoShort\": 0}"
 
-### Для local
-```bash
-curl -X POST http://localhost:80/send-message -H "Content-Type: application/json" -d "{\"text\": \"Symbol = 1000PEPEUSDT.P OS/OB signal  OS 1h\"}"
-``` 
-
-
-
-
+curl -X POST http://185.87.193.73:80/tradingview-signal -H "Content-Type: application/json" -d "{\"Type\": \"OS/OB signal\", \"Symbol\": \"1000PEPEUSDT.P\", \"GoLong\": 1, \"GoShort\": 0}"

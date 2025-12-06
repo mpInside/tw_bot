@@ -2,7 +2,6 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from datetime import datetime
 import aiohttp
-import re
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, WEBHOOK_URL_BUY, SECRET_FINANDY_BUY
 from logger import setup_logger
 
@@ -50,37 +49,53 @@ async def process_callback(callback_query: types.CallbackQuery):
         logger.error(f"Произошла ошибка: {str(e)}")
         await callback_query.answer(f"Произошла ошибка: {str(e)}", show_alert=True)
 
-async def send_trading_signal(message_text: str):
+async def send_trading_signal(symbol: str, signal_type: str, side: str):
     """
     Отправляет торговый сигнал в Telegram
+    
+    Параметры:
+    - symbol: тикер торгового инструмента
+    - signal_type: тип сигнала (например, "OS/OB signal")
+    - side: сторона сделки ("buy" или "sell")
     """
     try:
-        # Извлекаем тикер из сообщения
-        ticker_match = re.search(r'Symbol = (.*?) OS/OB signal', message_text)
-        if not ticker_match:
-            raise ValueError("No ticker found in message")
+        if not symbol:
+            raise ValueError("Symbol is required")
         
-        # Извлекаем тикер из первой группы совпадения регулярного выражения
-        ticker = ticker_match.group(1)
+        ticker = symbol
+        signal_type = signal_type or "OS/OB signal"
+        
+        # Определяем эмодзи и текст для стороны сигнала
+        if side == "buy":
+            side_emoji = "🟢"
+            side_text = "BUY"
+        elif side == "sell":
+            side_emoji = "🔴"
+            side_text = "SELL"
+        else:
+            raise ValueError(f"Недопустимое значение side: {side}. Допустимые значения: 'buy' или 'sell'")
         
         # Create TradingView URL
         tradingview_url = f"https://www.tradingview.com/chart/?symbol={ticker}&interval=1H"
         
         # Create inline keyboard
         builder = InlineKeyboardBuilder()
-        builder.button(text="📈 Открыть в TradingView", url=tradingview_url)
         builder.button(text="🛒 Отправить заявку", callback_data=ticker)
         builder.adjust(1)  # Размещаем кнопки по одной в ряд
         
-        # Format message with timestamp
-        formatted_message = f"📨 Новое сообщение:\n\n{ticker}\n\nOS/OB signal\n\n⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        # Создаем хэштег без ".P" на конце
+        hashtag_symbol = ticker.rstrip(".P") if ticker.endswith(".P") else ticker
         
+        # Format message with timestamp (символ как ссылка на TradingView)
+        formatted_message = f"📨 Новое сообщение:\n<a href=\"{tradingview_url}\">{ticker}</a>\n{signal_type}\n{side_emoji} {side_text}\n⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n#{hashtag_symbol}"
         
         # Send message to Telegram with inline keyboard
         await bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=formatted_message,
-            reply_markup=builder.as_markup()
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML",
+            disable_web_page_preview=True
         )
             
         return {"status": "success", "message": "Message sent successfully"}
