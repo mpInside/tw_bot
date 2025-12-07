@@ -9,8 +9,8 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 # Trading configuration
-WEBHOOK_URL_BUY = os.getenv('WEBHOOK_URL_BUY')
-SECRET_FINANDY_BUY = os.getenv('SECRET_FINANDY_BUY')
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+SECRET_FINANDY = os.getenv('SECRET_FINANDY')
 
 # Server configuration
 HOST = "0.0.0.0"
@@ -20,8 +20,8 @@ PORT = 80
 required_vars = {
     'TELEGRAM_BOT_TOKEN': TELEGRAM_BOT_TOKEN,
     'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID,
-    'WEBHOOK_URL_BUY': WEBHOOK_URL_BUY,
-    'SECRET_FINANDY_BUY': SECRET_FINANDY_BUY
+    'WEBHOOK_URL': WEBHOOK_URL,
+    'SECRET_FINANDY': SECRET_FINANDY
 }
 
 missing_vars = [var for var, value in required_vars.items() if value is None]
